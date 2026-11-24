@@ -68,40 +68,48 @@ def load_map(filename):
             livres += 1
         a["max"] = livres * 48
                  
+
 def load():
-    global clock,arbusto,grama,abelha_1,abelha_2,abelha_com_polen,aranha_1,aranha_2,colmeia,coracao,fio,flor,flor_vazia,lingua_meio,lingua_ponta,sapo_1,sapo_2,px,py,fonte,coracao_pequeno,fonte_grande,som_vitoria
+    global clock, arbusto, grama, abelha_1, abelha_2, abelha_com_polen, aranha_1, aranha_2, colmeia, coracao, fio, flor, flor_vazia
+    global lingua_meio, lingua_ponta, sapo_1, sapo_2, px, py, fonte, coracao_pequeno, fonte_grande, som_vitoria, som_derrota, som_dano
     clock = pygame.time.Clock()
     load_map("mapa.txt")
-    arbusto = pygame.image.load("arbusto.png")
-    grama = pygame.image.load("grama.png")
     
-    abelha_frames.append(pygame.image.load("abelha_1.png"))
-    abelha_frames.append(pygame.image.load("abelha_2.png"))
+    arbusto = pygame.image.load("Imagens/arbusto.png")
+    grama = pygame.image.load("Imagens/grama.png")
     
-    abelha_com_polen = pygame.image.load("abelha_com_polen.png")
-    aranha_1 = pygame.image.load("aranha_1.png")
-    aranha_2 = pygame.image.load("aranha_2.png")
-    colmeia = pygame.image.load("colmeia.png")
-    coracao = pygame.image.load("coracao.png")
-    fio = pygame.image.load("fio.png")
-    flor = pygame.image.load("flor.png")
-    flor_vazia = pygame.image.load("flor_vazia.png")
-    lingua_meio = pygame.image.load("lingua_meio.png")
-    lingua_ponta = pygame.image.load("lingua_ponta.png")
-    sapo_1 = pygame.image.load("sapo_1.png")
-    sapo_2 = pygame.image.load("sapo_2.png")    
+    abelha_frames.append(pygame.image.load("Imagens/abelha_1.png"))
+    abelha_frames.append(pygame.image.load("Imagens/abelha_2.png"))
+    
+    abelha_com_polen = pygame.image.load("Imagens/abelha_com_polen.png")
+    aranha_1 = pygame.image.load("Imagens/aranha_1.png")
+    aranha_2 = pygame.image.load("Imagens/aranha_2.png")
+    colmeia = pygame.image.load("Imagens/colmeia.png")
+    coracao = pygame.image.load("Imagens/coracao.png")
+    fio = pygame.image.load("Imagens/fio.png")
+    flor = pygame.image.load("Imagens/flor.png")
+    flor_vazia = pygame.image.load("Imagens/flor_vazia.png")
+    lingua_meio = pygame.image.load("Imagens/lingua_meio.png")
+    lingua_ponta = pygame.image.load("Imagens/lingua_ponta.png")
+    sapo_1 = pygame.image.load("Imagens/sapo_1.png")
+    sapo_2 = pygame.image.load("Imagens/sapo_2.png")    
     
     coracao_pequeno = pygame.transform.scale(coracao, (32, 32))
     fonte = pygame.font.SysFont("arial", 24, bold=True)
     fonte_grande = pygame.font.SysFont("arial", 110, bold=True)
     
-    pygame.mixer.music.load("Musica_fundo.mp3")
+    pygame.mixer.music.load("Sons/Musica_fundo.mp3")
     pygame.mixer.music.set_volume(0.4)
-    pygame.mixer.music.play(-1) 
+    pygame.mixer.music.play(-1)
     
-    som_vitoria = pygame.mixer.Sound("vitoria.mp3")
+    som_vitoria = pygame.mixer.Sound("Sons/vitoria.mp3")
     som_vitoria.set_volume(0.8)
     
+    som_derrota = pygame.mixer.Sound("Sons/derrota.mp3")
+    som_derrota.set_volume(0.8)
+    
+    som_dano = pygame.mixer.Sound("Sons/dano.mp3")
+    som_dano.set_volume(0.8)
 def check_box_collision(x1, y1, w1, h1, x2, y2, w2, h2):
    return (x1 < x2 + w2) and (x2 < x1 + w1) and (y1 < y2 + h2) and (y2 < y1 + h1)    
 
@@ -138,6 +146,7 @@ def reiniciar():
     flores_vazias.clear()
     invencivel = 0
     
+    som_derrota.stop()
     som_vitoria.stop()
     pygame.mixer.music.play(-1)
 
@@ -151,6 +160,7 @@ def draw_game_over(screen):
     
     txt_reiniciar = fonte.render("Aperte R para reiniciar", True, (255, 255, 255))
     screen.blit(txt_reiniciar, (width // 2 - txt_reiniciar.get_width() // 2,  height // 2 + 60))
+    
 
 def coletar_e_entregar():
     global carregando_polen, pontos, entregues, estado
@@ -290,8 +300,11 @@ def levar_dano():
     if vidas <= 0:
         vidas = 0
         estado = "derrota"
+        som_derrota.play()
         pygame.mixer.music.stop()
-
+    else:
+        som_dano.play()
+    
 def checar_dano():
     abelha = (px + 8, py + 8, 32, 32)
 
@@ -352,6 +365,7 @@ def update(dt):
             tempo_restante = 0
             if entregues < 10:
                 estado = "derrota"
+                som_derrota.play()
                 pygame.mixer.music.stop()
                 return
     

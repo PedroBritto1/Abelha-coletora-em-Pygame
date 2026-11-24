@@ -20,7 +20,7 @@ px = 0
 py = 0
 
 vidas = 3
-tempo_restante = 90000
+tempo_restante = 120000
 pontos = 0
 entregues = 0
 estado = "jogando"

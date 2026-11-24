@@ -58,7 +58,7 @@ def load_map(filename):
                         sapos.append({"i": i, "j": j, "esticada": False,"timer": random.randint(2000, 5000), "direcao": "esquerda"})
                     if line[j] == "A":
                         aranhas.append({"i": i, "j": j, "offset": 0, "dir": 1, "max": 0})
-            i+=1
+                i+=1
     for a in aranhas:
         livres = 0
         for k in range(1, alcance_aranha + 1):
@@ -69,7 +69,7 @@ def load_map(filename):
         a["max"] = livres * 48
                  
 def load():
-    global clock,arbusto,grama,abelha_1,abelha_2,abelha_com_polen,aranha_1,aranha_2,colmeia,coracao,fio,flor,flor_vazia,lingua_meio,lingua_ponta,sapo_1,sapo_2,px,py,fonte,coracao_pequeno,fonte_grande
+    global clock,arbusto,grama,abelha_1,abelha_2,abelha_com_polen,aranha_1,aranha_2,colmeia,coracao,fio,flor,flor_vazia,lingua_meio,lingua_ponta,sapo_1,sapo_2,px,py,fonte,coracao_pequeno,fonte_grande,som_vitoria
     clock = pygame.time.Clock()
     load_map("mapa.txt")
     arbusto = pygame.image.load("arbusto.png")
@@ -94,6 +94,13 @@ def load():
     coracao_pequeno = pygame.transform.scale(coracao, (32, 32))
     fonte = pygame.font.SysFont("arial", 24, bold=True)
     fonte_grande = pygame.font.SysFont("arial", 110, bold=True)
+    
+    pygame.mixer.music.load("Musica_fundo.mp3")
+    pygame.mixer.music.set_volume(0.4)
+    pygame.mixer.music.play(-1) 
+    
+    som_vitoria = pygame.mixer.Sound("vitoria.mp3")
+    som_vitoria.set_volume(0.8)
     
 def check_box_collision(x1, y1, w1, h1, x2, y2, w2, h2):
    return (x1 < x2 + w2) and (x2 < x1 + w1) and (y1 < y2 + h2) and (y2 < y1 + h1)    
@@ -130,6 +137,9 @@ def reiniciar():
     carregando_polen = False
     flores_vazias.clear()
     invencivel = 0
+    
+    som_vitoria.stop()
+    pygame.mixer.music.play(-1)
 
 def draw_game_over(screen):
     overlay = pygame.Surface((width, height), pygame.SRCALPHA)
@@ -165,6 +175,8 @@ def coletar_e_entregar():
                     entregues += 1
                     if entregues >= 10:
                        estado = "vitoria"
+                       pygame.mixer.music.stop()
+                       som_vitoria.play()
                     return
                
 def draw_polen(screen):
@@ -184,12 +196,16 @@ def achar_posicao_livre():
     return None
 
 def atualizar_flores(dt):
-    for pos in list(flores_vazias):
-        flores_vazias[pos] -= dt
-        if flores_vazias[pos] <= 0:
-            i, j = pos
-            mapa[i][j] = "F"
-            del flores_vazias[pos]
+   global flores_vazias
+   ainda_vazias = {}
+   for pos, tempo in flores_vazias.items():
+       tempo -= dt
+       if tempo <= 0:
+           i, j = pos
+           mapa[i][j] = "F"
+       else:
+           ainda_vazias[pos] = tempo
+   flores_vazias = ainda_vazias
 
 def posicoes_lingua(s):
     direcoes = {"direita": (0, 1), "esquerda": (0, -1), "cima": (-1, 0), "baixo": (1, 0)}
@@ -201,7 +217,7 @@ def posicoes_lingua(s):
         if ni < 0 or ni >= len(mapa) or nj < 0 or nj >= len(mapa[ni]):
             break
         if mapa[ni][nj] == "#":
-            break   # arbusto bloqueia a língua
+            break   
         posicoes.append((nj * 48, ni * 48 + 50))
     return posicoes
 
@@ -257,7 +273,6 @@ def draw_aranhas(screen):
         topo = a["i"] * 48 + 50
         y = topo + a["offset"]
 
-        # fio: repete a imagem do topo até a aranha
         yy = topo
         while yy < y:
             screen.blit(fio, (x, yy))
@@ -275,6 +290,7 @@ def levar_dano():
     if vidas <= 0:
         vidas = 0
         estado = "derrota"
+        pygame.mixer.music.stop()
 
 def checar_dano():
     abelha = (px + 8, py + 8, 32, 32)
@@ -336,6 +352,7 @@ def update(dt):
             tempo_restante = 0
             if entregues < 10:
                 estado = "derrota"
+                pygame.mixer.music.stop()
                 return
     
     if tempo_decorrido < tempo_cooldown:

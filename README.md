@@ -35,3 +35,4 @@ um de cada vez, desviando das ameaças do mapa.
 ## Detalhes técnicos
 - Mapa em matriz carregado a partir de um arquivo .txt, com colisão
 - Animações da abelha e das ameaças
+- Possui musica e efeitos sonoros
